@@ -1,5 +1,6 @@
 # Minecraft Calculator
- 
-Almost finished...
 
-[Visit Site!](https://MateuszS6.github.io/minecraft-calculator/)
+### [Try it here!](https://MateuszS6.github.io/Minecraft-Calculator/)
+
+> NOTE: The app needs polishing.
+
