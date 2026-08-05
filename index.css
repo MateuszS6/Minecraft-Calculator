@@ -68,7 +68,9 @@ main {
     padding: 0 5rem 5rem;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     color: var(--green-1);
     font-family: "Minecraft Ten", sans-serif;
 }
@@ -93,7 +95,8 @@ input[type="number"]::-webkit-outer-spin-button {
     margin: 0;
 }
 
-input, button {
+input,
+button {
     font-family: Minecraft, sans-serif;
     background-color: var(--bg-color-alt);
     color: white;
@@ -145,7 +148,8 @@ footer a:hover {
     gap: 1rem;
 }
 
-.section {
+.portals-card,
+.path-card {
     margin-top: 3rem;
     padding: 1rem 2rem;
     background-color: #222;

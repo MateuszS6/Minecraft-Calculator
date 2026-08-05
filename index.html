@@ -1,91 +1,107 @@
 <!DOCTYPE html>
 <html lang="en" style="scroll-behavior: smooth">
+
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>MC Calc</title>
-    <link href="styles.css" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
 </head>
+
 <body>
-<div id="cursor"></div>
-<header>
-    <h1>Minecraft Calculator</h1>
-    <p>The best tool for various calculations needed when traversing the lands of Minecraft.</p>
-</header>
-<nav class="navbar"></nav>
-<main>
-    <div class="section">
-        <h2>Nether Portals</h2>
-        <p class="tip">
-            Convert dimension coordinates to find the best placement to link portals.<br>
-            Things to note:
-        </p>
-        <ul class="tip">
-            <li>Coordinates in the Nether are 1/8th of the Overworld coordinates.</li>
-            <li>Y coordinate is the same in both dimensions (clamped to world limits).</li>
-            <li>Portals can link in both directions, so you can use this tool to convert Nether to Overworld as well.
-            </li>
-        </ul>
-        <p class="tip">Simply enter the coordinates in the Overworld or Nether, and the tool will
-            calculate the corresponding coordinates in the other dimension!</p>
-        <div class="box-row">
-            <div class="coords-box">
-                <p id="input-dimension">Overworld</p>
-                <label for="x-input">X <input id="x-input" required type="number"></label>
-                <label for="y-input">Y <input id="y-input" required type="number"></label>
-                <label for="z-input">Z <input id="z-input" required type="number"></label>
-                <button id="clear-button">Clear</button>
+
+    <div id="cursor"></div>
+
+    <header>
+        <h1>Minecraft Calculator</h1>
+        <p>The best tool for various calculations needed when traversing the lands of Minecraft.</p>
+    </header>
+
+    <!-- <nav class="navbar"></nav> -->
+
+    <main>
+        <section class="portals-card">
+            <h2>Nether Portals</h2>
+            <p class="tip">
+                Convert dimension coordinates to find the best placement to link portals.<br>
+                Things to note:
+            </p>
+            <ul class="tip">
+                <li>Coordinates in the Nether are 1/8th of the Overworld coordinates.</li>
+                <li>Y coordinate is the same in both dimensions (clamped to world limits).</li>
+                <li>Portals can link in both directions, so you can use this tool to convert Nether to Overworld as
+                    well.
+                </li>
+            </ul>
+            <p class="tip">Simply enter the coordinates in the Overworld or Nether, and the tool will
+                calculate the corresponding coordinates in the other dimension!</p>
+
+            <div class="box-row">
+                <div class="coords-box">
+                    <p id="input-dimension">Overworld</p>
+                    <label for="x-input">X <input id="x-input" required type="number"></label>
+                    <label for="y-input">Y <input id="y-input" required type="number"></label>
+                    <label for="z-input">Z <input id="z-input" required type="number"></label>
+                    <button id="clear-button">Clear</button>
+                </div>
+                <div class="coords-box">
+                    <p id="output-dimension">Nether</p>
+                    <p class="result" id="conversion">~ ~ ~</p>
+                    <button id="copy-button">Copy</button>
+                </div>
             </div>
-            <div class="coords-box">
-                <p id="output-dimension">Nether</p>
-                <p class="result" id="conversion">~ ~ ~</p>
-                <button id="copy-button">Copy</button>
+            <div class="mode-toggle">
+                <h4>Mode: <span id="mode-text">Overworld to Nether</span></h4>
+                <button id="switch-button">Switch</button>
             </div>
-        </div>
-        <div class="mode-toggle">
-            <h4>Mode: <span id="mode-text">Overworld to Nether</span></h4>
-            <button id="switch-button">Switch</button>
-        </div>
-    </div>
-    <div class="section">
-        <h2>Optimal Path</h2>
-        <p class="tip">Calculate the displacement, distance, and optimal building path with directions, from your main
-            portal to
-            another.</p>
-        <div class="box-row">
-            <div class="coords-box">
-                <h4>Portal 1</h4>
-                <label for="x1-input">X <input id="x1-input" required type="number"></label>
-                <label for="y1-input">Y <input id="y1-input" required type="number"></label>
-                <label for="z1-input">Z <input id="z1-input" required type="number"></label>
-                <button id="clear-1-button">Clear</button>
+        </section>
+
+        <section class="path-card">
+            <h2>Optimal Path</h2>
+            <p class="tip">Calculate the displacement, distance, and optimal building path with directions, from your
+                main
+                portal to
+                another.</p>
+
+            <div class="box-row">
+                <div class="coords-box">
+                    <h4>Portal 1</h4>
+                    <label for="x1-input">X <input id="x1-input" required type="number"></label>
+                    <label for="y1-input">Y <input id="y1-input" required type="number"></label>
+                    <label for="z1-input">Z <input id="z1-input" required type="number"></label>
+                    <button id="clear-1-button">Clear</button>
+                </div>
+
+                <div class="coords-box">
+                    <h4>Result</h4>
+                    <p class="result">
+                        Optimal Path: <br>
+                        <span id="follow-result">~ ~ ~</span><br>
+                        Displacement:<br>
+                        <span id="displacement-result">~ ~ ~</span><br>
+                        Distance: <br>
+                        <span id="distance-result">~</span> blocks<br>
+                    </p>
+                </div>
+
+                <div class="coords-box">
+                    <h4>Portal 2</h4>
+                    <label for="x2-input">X <input id="x2-input" required type="number"></label>
+                    <label for="y2-input">Y <input id="y2-input" required type="number"></label>
+                    <label for="z2-input">Z <input id="z2-input" required type="number"></label>
+                    <button id="clear-2-button">Clear</button>
+                </div>
             </div>
-            <div class="coords-box">
-                <h4>Result</h4>
-                <p class="result">
-                    Optimal Path: <br>
-                    <span id="follow-result">~ ~ ~</span><br>
-                    Displacement:<br>
-                    <span id="displacement-result">~ ~ ~</span><br>
-                    Distance: <br>
-                    <span id="distance-result">~</span> blocks<br>
-                </p>
-            </div>
-            <div class="coords-box">
-                <h4>Portal 2</h4>
-                <label for="x2-input">X <input id="x2-input" required type="number"></label>
-                <label for="y2-input">Y <input id="y2-input" required type="number"></label>
-                <label for="z2-input">Z <input id="z2-input" required type="number"></label>
-                <button id="clear-2-button">Clear</button>
-            </div>
-        </div>
-    </div>
-</main>
-<footer>
-    <div>© 2025 Mateusz Stepien</div>
-    <div><a href="https://github.com/MateuszS6" target="_blank">GitHub</a></div>
-    <div><a href="https://www.linkedin.com/in/matz-stepien" target="_blank">LinkedIn</a></div>
-</footer>
-<script src="scripts/main.js" type="module"></script>
+        </section>
+    </main>
+
+    <footer>
+        <div>© 2025 Mateusz Stepien</div>
+        <div><a href="https://github.com/MateuszS6" target="_blank">GitHub</a></div>
+        <div><a href="https://www.linkedin.com/in/matz-stepien" target="_blank">LinkedIn</a></div>
+    </footer>
+
+    <script src="scripts/main.js" type="module"></script>
 </body>
+
 </html>
