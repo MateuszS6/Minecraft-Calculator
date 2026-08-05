@@ -18,11 +18,11 @@ Minecraft Calculator is a lightweight web app that provides essential Minecraft 
 
 ### Portal Coordinates Conversion
 
-![portals-calc](readme-images\portals-calc.png)
+![portals-calc](readme-images/portals-calc.png)
 
 ### Optimal Path Calculation
 
-![path-calc](readme-images\path-calc.png)
+![path-calc](readme-images/path-calc.png)
 
 ## Status
 
