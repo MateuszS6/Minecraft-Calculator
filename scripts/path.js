@@ -1,84 +1,90 @@
-const x1Input = document.getElementById('x1-input');
-const y1Input = document.getElementById('y1-input');
-const z1Input = document.getElementById('z1-input');
-const x2Input = document.getElementById('x2-input');
-const y2Input = document.getElementById('y2-input');
-const z2Input = document.getElementById('z2-input');
+import { readPoints } from "./coordinates.js";
 
-const displacementResult = document.getElementById('displacement-result');
-const followResult = document.getElementById('follow-result');
-const distanceResult = document.getElementById('distance-result');
+function calculateRoute(start, destination) {
+	const [dx, dy, dz] = destination.map((value, index) => value - start[index]);
+	const horizontal = [[dx, "East", "West"], [dz, "South", "North"]];
+	horizontal.sort(([a], [b]) => Math.abs(b) - Math.abs(a));
 
-const clear1Button = document.getElementById('clear-1-button');
-const clear2Button = document.getElementById('clear-2-button');
+	const steps = [...horizontal, [dy, "Up", "Down"]]
+		.filter(([amount]) => amount !== 0)
+		.map(([amount, positive, negative]) =>
+			`${Math.abs(amount)} ${amount > 0 ? positive : negative}`
+		);
 
-function initPathModule() {
-	[x1Input, y1Input, z1Input, x2Input, y2Input, z2Input].forEach(input => {
-		input.addEventListener('input', updatePathResult);
-	});
-
-	clear1Button.addEventListener('click', () => {
-		x1Input.value = '';
-		y1Input.value = '';
-		z1Input.value = '';
-		updatePathResult();
-	});
-
-	clear2Button.addEventListener('click', () => {
-		x2Input.value = '';
-		y2Input.value = '';
-		z2Input.value = '';
-		updatePathResult();
-	});
-}
-
-function displacement({ x1, y1, z1 }, { x2, y2, z2 }) {
 	return {
-		dx: x2 - x1,
-		dy: y2 - y1,
-		dz: z2 - z1
+		steps,
+		displacement: [dx, dy, dz],
+		straightLine: Math.hypot(dx, dy, dz),
+		axisDistance: Math.abs(dx) + Math.abs(dy) + Math.abs(dz)
 	};
 }
 
-function formatDisplacement({ dx, dy, dz }) {
-	const signed = (value) => value > 0 ? `+${value}` : value;
-	return `${signed(dx)} ${signed(dy)} ${signed(dz)}`;
-}
+export function initPathModule() {
+	const startInputs = ["x1-input", "y1-input", "z1-input"]
+		.map(id => document.getElementById(id));
+	const destinationInputs = ["x2-input", "y2-input", "z2-input"]
+		.map(id => document.getElementById(id));
 
-function distance({ dx, dy, dz }) {
-	return Math.sqrt(dx * dx + dy * dy + dz * dz);
-}
+	const inputs = [...startInputs, ...destinationInputs];
+	const stats = document.getElementById("route-stats");
+	const message = document.getElementById("route-message");
+	const stepsResult = document.getElementById("follow-result");
+	const displacementResult = document.getElementById("displacement-result");
+	const distanceResult = document.getElementById("distance-result");
+	const axisResult = document.getElementById("axis-result");
 
-function optimalPath({ dx, dy, dz }) {
-	const xDir = dx > 0 ? `${dx} East` : `${-dx} West`;
-	const yDir = dy > 0 ? `${dy} Up` : `${-dy} Down`;
-	const zDir = dz > 0 ? `${dz} South` : `${-dz} North`;
+	function updateRoute() {
+		const start = readPoints(startInputs);
+		const destination = readPoints(destinationInputs);
 
-	const [first, second] = Math.abs(dx) >= Math.abs(dz) ? [xDir, zDir] : [zDir, xDir];
+		stats.hidden = true;
+		message.hidden = false;
 
-	return `${first}, ${second}, ${yDir}`;
-}
+		if (!start.point || !destination.point) {
+			message.textContent = start.error || destination.error ||
+				"Enter both points to see the route.";
+			return;
+		}
 
-function updatePathResult() {
-	const x1 = parseInt(x1Input.value);
-	const y1 = parseInt(y1Input.value);
-	const z1 = parseInt(z1Input.value);
-	const x2 = parseInt(x2Input.value);
-	const y2 = parseInt(y2Input.value);
-	const z2 = parseInt(z2Input.value);
+		const route = calculateRoute(start.point, destination.point);
 
-	if (isNaN(x1) || isNaN(y1) || isNaN(z1) || isNaN(x2) || isNaN(y2) || isNaN(z2)) {
-		displacementResult.innerText = '~ ~ ~';
-		followResult.innerText = '~ ~ ~';
-		distanceResult.innerText = '~';
-		return;
+		if (!Number.isSafeInteger(route.axisDistance)) {
+			message.textContent = "The points are too far apart to calculate precisely.";
+			return;
+		}
+
+		stepsResult.textContent = route.steps.join(", ") || "Same location";
+		displacementResult.textContent = route.displacement
+			.map(value => value > 0 ? `+${value}` : value)
+			.join(" ");
+		distanceResult.textContent = `${route.straightLine.toFixed(2)} blocks`;
+		axisResult.textContent = `${route.axisDistance} blocks`;
+
+		message.hidden = true;
+		stats.hidden = false;
 	}
 
-	const origin = { x1, y1, z1 };
-	const target = { x2, y2, z2 };
-	const d = displacement(origin, target);
+	function clearPoint(group) {
+		group.forEach(input => { input.value = ""; });
+		updateRoute();
+		group[0].focus();
+	}
 
-	displacementResult.innerText = formatDisplacement(d);
-	followResult.innerText = optimalPath(d);
-	distanceResult.innerText = distance(d).toFixed(2);
+	inputs.forEach(input => input.addEventListener("input", updateRoute));
+
+	document.getElementById("clear-start-button").addEventListener("click", () => {
+		clearPoint(startInputs);
+	});
+
+	document.getElementById("clear-destination-button").addEventListener("click", () => {
+		clearPoint(destinationInputs);
+	});
+
+	document.getElementById("route-example").addEventListener("click", () => {
+		const example = [0, 64, 0, 3, 64, 4];
+		inputs.forEach((input, index) => { input.value = String(example[index]); });
+		updateRoute();
+	});
+
+	updateRoute();
 }

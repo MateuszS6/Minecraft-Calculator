@@ -197,6 +197,10 @@ button:disabled {
 	overflow-wrap: anywhere;
 }
 
+[data-dimension="Overworld"] {
+	border-color: var(--green);
+}
+
 [data-dimension="Nether"] {
 	border-color: #8064a2;
 }

@@ -1,97 +1,111 @@
-const xInput = document.getElementById('x-input');
-const yInput = document.getElementById('y-input');
-const zInput = document.getElementById('z-input');
-const conversion = document.getElementById('conversion');
+import { readPoints } from "./coordinates.js";
 
-const modeText = document.getElementById('mode-text');
-const inputDimensionName = document.getElementById('input-dimension');
-const outputDimensionName = document.getElementById('output-dimension');
+const yRanges = {
+	Overworld: [-62, 316],
+	Nether: [2, 123]
+}
 
-const switchButton = document.getElementById('switch-button');
-const clearButton = document.getElementById('clear-button');
-const copyButton = document.getElementById('copy-button');
+/**
+ * @param {number[]} point
+ * @param {"Overworld" | "Nether"} from
+ * @returns {number[]}
+ */
+function convertPoint([x, y, z], from) {
+	if (from === "Nether") return [x * 8, y, z * 8];
 
-const overYMin = -62;
-const overYMax = 316;
-const netherYMin = 2;
-const netherYMax = 123;
+	const [min, max] = yRanges.Nether;
+	return [
+		Math.floor(x / 8),
+		Math.min(max, Math.max(min, y)), // Clamp to height limits
+		Math.floor(z / 8)
+	];
+}
 
-let isReversed = false;
+export function initConversionModule() {
+	const inputs = ["x-input", "y-input", "z-input"].map(id => /** @type {HTMLInputElement} */(document.getElementById(id)));
+	const yInput = inputs[1];
+	const result = document.getElementById("conversion");
+	const resultPanel = document.getElementById("portal-result");
+	const message = document.getElementById("portal-message");
+	/** @type {HTMLButtonElement} */
+	const copyButton = document.getElementById("copy-button");
+	const copyStatus = document.getElementById("copy-status");
+	/** @type {"Overworld" | "Nether"} */
+	let from = "Overworld";
 
-function initConversionModule() {
-	[xInput, yInput, zInput].forEach(input => {
-		input.addEventListener('input', updateConversion);
+	function updateConversion() {
+		const { point, error } = readPoints(inputs);
+
+		if (!point) {
+			return;
+		}
+
+		const converted = convertPoint(point, from);
+
+		copyStatus.textContent = "";
+		copyButton.disabled = true;
+		result.textContent = "—";
+
+		if (!converted) {
+			message.textContent = error || "Enter X, Y and Z to see the result."
+			return;
+		}
+
+		if (!converted.every(Number.isSafeInteger)) {
+			return;
+		}
+
+		result.textContent = converted.join(" ");
+		message.textContent = point[1] === converted[1]
+			? ""
+			: `Suggested Y adjusted from ${point[1]} to ${converted[1]}.`;
+		copyButton.disabled = false;
+	}
+
+	function updateDirection() {
+		const to = from === "Overworld" ? "Nether" : "Overworld";
+		const [min, max] = yRanges[from];
+
+		document.getElementById("mode-text").textContent = `${from} → ${to}`;
+		document.getElementById("input-dimension").textContent = from;
+		document.getElementById("output-dimension").textContent = to;
+		document.getElementById("y-range").textContent = `Y range for this tool: ${min} to ${max}.`;
+		resultPanel.dataset.dimension = to;
+		yInput.min = String(min);
+		yInput.max = String(max);
+
+		updateConversion();
+	}
+
+	// Activate input listeners
+	inputs.forEach(input => input.addEventListener("input", updateConversion));
+
+	document.getElementById('reverse-button').addEventListener("click", () => {
+		from = from === "Overworld" ? "Nether" : "Overworld";
+		updateDirection();
 	});
 
-	switchButton.addEventListener('click', () => {
-		isReversed = !isReversed
-
-		// Update UI
-		modeText.innerText = isReversed ? 'Nether to Overworld' : 'Overworld to Nether';
-		inputDimensionName.innerText = isReversed ? 'Nether' : 'Overworld';
-		outputDimensionName.innerText = isReversed ? 'Overworld' : 'Nether';
-
-		updateYInputRange();
+	document.getElementById('clear-button').addEventListener("click", () => {
+		inputs.forEach(input => { input.value = ""; });
 		updateConversion();
 	});
 
-	clearButton.addEventListener('click', () => {
-		xInput.value = '';
-		yInput.value = '';
-		zInput.value = '';
+	document.getElementById("portal-example").addEventListener("click", () => {
+		const example = from === "Overworld" ? [-9, 140, 800] : [-2, 64, 100];
+		inputs.forEach((input, index) => { input.value = String(example[index]); });
 		updateConversion();
+	})
+
+	copyButton.addEventListener("click", async () => {
+		const coordinates = result.textContent ?? "";
+
+		try {
+			await navigator.clipboard.writeText(coordinates);
+			copyStatus.textContent = `Copied ${coordinates}.`;
+		} catch {
+			copyStatus.textContent = "Copy failed. You can select the coordinates manually.";
+		}
 	});
 
-	copyButton.addEventListener('click', () => {
-		const textToCopy = conversion.innerText;
-		navigator.clipboard.writeText(textToCopy).then(() => {
-			alert('Coordinates copied to clipboard!');
-		}).catch(err => {
-			console.error('Failed to copy: ', err);
-			alert('Failed to copy coordinates.');
-		});
-	});
-
-	updateYInputRange();
-}
-
-function clampNetherY(val) {
-	return Math.min(123, Math.max(2, val));
-}
-
-function overworldToNether(x, y, z) {
-	return {
-		x: Math.floor(x / 8),
-		y: clampNetherY(Math.floor(y)),
-		z: Math.floor(z / 8)
-	};
-}
-
-function netherToOverworld(x, y, z) {
-	return {
-		x: x * 8,
-		y: y,
-		z: z * 8
-	};
-}
-
-function updateYInputRange() {
-	yInput.min = isReversed ? netherYMin : overYMin;
-	yInput.max = isReversed ? netherYMax : overYMax;
-}
-
-function updateConversion() {
-	let x = parseInt(xInput.value);
-	let y = parseInt(yInput.value);
-	let z = parseInt(zInput.value);
-
-	const coords = isReversed
-		? netherToOverworld(x, y, z)
-		: overworldToNether(x, y, z);
-
-	x = isNaN(coords.x) ? '~' : coords.x;
-	y = isNaN(coords.y) ? '~' : coords.y;
-	z = isNaN(coords.z) ? '~' : coords.z;
-
-	conversion.innerText = `${x} ${y} ${z}`;
+	updateDirection();
 }
