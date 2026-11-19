@@ -36,22 +36,19 @@ export function initConversionModule() {
 	function updateConversion() {
 		const { point, error } = readPoints(inputs);
 
+		copyStatus.textContent = "";
+		copyButton.disabled = true;
+		result.textContent = "—"
+
 		if (!point) {
+			message.textContent = error || "Enter X, Y and Z to see the result.";
 			return;
 		}
 
 		const converted = convertPoint(point, from);
 
-		copyStatus.textContent = "";
-		copyButton.disabled = true;
-		result.textContent = "—";
-
-		if (!converted) {
-			message.textContent = error || "Enter X, Y and Z to see the result."
-			return;
-		}
-
 		if (!converted.every(Number.isSafeInteger)) {
+			message.textContent = "The converted coordinates are too large.";
 			return;
 		}
 
